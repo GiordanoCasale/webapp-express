@@ -4,7 +4,7 @@ const app = express();
 
 const port = 3000;
 
-const postsRouter = require('./routers/posts');
+const postsRouter = require('./routers/movies');
 
 app.use(express.json());
 
@@ -15,10 +15,10 @@ app.use(express.static("public"));
 
 app.get("/", (req, res) => {
 
-    res.send("benvenuti nel mio blog")
+    res.send("benvenuti nel mio catalogo")
 });
 
 app.listen(port, () => {
-    console.log(`server del blog in ascolto alla porta ${port}`);
+    console.log(`server del catalogo in ascolto alla porta ${port}`);
 
 });
