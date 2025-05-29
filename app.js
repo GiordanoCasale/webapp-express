@@ -8,6 +8,8 @@ const port = 3000;
 // Definisce la porta su cui il server ascolterà le richieste HTTP
 
 const moviesRouter = require('./routers/movies');
+const { notFound, errorHandler } = require('./middleware/middlewareerror');
+
 // Importa il router dedicato alle rotte /movies, definito in un file separato
 
 app.use(express.json());
@@ -28,6 +30,17 @@ app.get("/", (req, res) => {
 });
 // Definisce la rotta GET per la root "/" del sito
 // Quando un client fa richiesta a "/", risponde con un semplice messaggio di benvenuto
+
+app.use(notFound);
+// Middleware per gestire tutte le richieste che non corrispondono a nessuna rotta definita
+// Deve essere dichiarato dopo tutte le altre rotte
+// Restituisce un errore 404 in formato JSON
+
+
+app.use(errorHandler);
+// Middleware per gestire tutti gli errori che avvengono nelle route o middleware precedenti
+// Registra l’errore e invia una risposta con codice 500 (o altro se già impostato)
+
 
 app.listen(port, () => {
     console.log(`server del catalogo in ascolto alla porta ${port}`);
