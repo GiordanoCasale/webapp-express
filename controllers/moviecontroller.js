@@ -1,72 +1,49 @@
-const connection = require("../data/db")
-// Importa la connessione al database definita nel file ../data/db
-// Presumibilmente è un oggetto configurato per eseguire query SQL
+const connection = require("../data/db");
 
-function index(req, res) {
-    // Funzione controller per gestire la richiesta GET /movies
-    // Ha lo scopo di restituire tutti i film presenti nel database
+const index = (req, res) => {
+    connection.query('SELECT * FROM movies', (err, moviesResult) => {
+        if (err) return res.status(500).json({ error: "Database Query Failed:" + err });
 
-    const sql = 'SELECT*FROM movies';
-    // Query SQL per selezionare tutti i record dalla tabella "movies"
-    // Nota: meglio mettere uno spazio dopo SELECT (SELECT * FROM movies) per chiarezza
+        const movies = moviesResult.map((movie) => {
+            return {
+                ...movie,
+                image: req.imagePath + movie.image
+            }
+        })
 
-    connection.query(sql, (err, results) => {
-        // Esegue la query sul DB
-        // err -> eventuale errore restituito dal DB
-        // results -> array dei film ottenuti dal DB
-
-        if (err) return res.status(500).json({ error: 'Database query failed' });
-        // Se c’è un errore nella query, risponde con status 500 e messaggio di errore
-
-        res.json(results);
-        // Se va tutto bene, risponde con la lista dei film in formato JSON
-    });
-};
+        res.json(movies);
+    })
+}
 
 const show = (req, res) => {
-    // Funzione controller per gestire la richiesta GET /movies/:id
-    // Restituisce un singolo film insieme alle sue recensioni
+    const { id } = req.params
 
-    const id = req.params.id;
-    // Prende l'id del film dai parametri della richiesta
+    const movieSql = `
+    SELECT M.*, ROUND(AVG(R.vote)) as average_vote 
+    FROM movies M
+    JOIN reviews R ON R.movie_id = M.id 
+    WHERE M.id = ?`;
 
-    // Prima query per prendere il film
-    const sql = 'SELECT * FROM movies WHERE id = ?';
-    // Query parametrizzata per prendere il film con id specificato
+    const reviewSql = 'SELECT * FROM reviews WHERE movie_id = ?';
 
-    connection.query(sql, [id], (err, movies) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ error: 'Errore durante la lettura dei film: ' + err });
-        }
-        if (movies.length === 0) {
-            // Se non trova il film con quell'id, risponde con 404
-            return res.status(404).json({ error: 'Film non trovato' });
-        }
+    connection.query(movieSql, [id], (err, movieResult) => {
+        if (err) return res.status(500).json({ error: "Database Query Failed:" + err });
 
-        const movie = movies[0];
-        // Prende il primo (e unico) film risultato dalla query
+        if (movieResult.length === 0) return res.status(404).json({ error: "Movie not found" });
 
-        // Seconda query per prendere le recensioni associate al film
-        const reviewssql = 'SELECT * FROM reviews WHERE movie_id = ?';
+        const movie = movieResult[0];
+        // Add the image path to the movie object
+        movie.image = req.imagePath + movie.image;
 
-        connection.query(reviewssql, [id], (err, reviews) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ error: 'Errore durante la lettura delle recensioni: ' + err });
-            }
-
-            // Aggiunge le recensioni all’oggetto movie
-            movie.reviews = reviews;
-
-            // Invia la risposta JSON con film + recensioni
+        connection.query(reviewSql, [id], (err, reviewResult) => {
+            if (err) return res.status(500).json({ error: "Database Query Failed:" + err });
+            movie.reviews = reviewResult;
             res.json(movie);
-        });
-    });
-};
+        })
+    })
+}
 
 module.exports = {
     index,
     show
 }
-// Esporta le funzioni index e show per poterle usare in altri file, es. router

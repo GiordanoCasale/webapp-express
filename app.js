@@ -4,8 +4,13 @@ const express = require('express');
 const app = express();
 // Crea un’istanza dell’app Express, che rappresenta il server web
 
-const port = 3000;
+const cors = require('cors')
+
+
+const port = process.env.SERVER_PORT || 3000;
 // Definisce la porta su cui il server ascolterà le richieste HTTP
+
+app.use(cors({ origin: process.env.FE_APP }));
 
 const moviesRouter = require('./routers/movies');
 const { notFound, errorHandler } = require('./middleware/middlewareerror');
