@@ -14,8 +14,9 @@ app.use(cors({ origin: process.env.FE_APP }));
 
 const moviesRouter = require('./routers/movies');
 const { notFound, errorHandler } = require('./middleware/middlewareerror');
-
 // Importa il router dedicato alle rotte /movies, definito in un file separato
+
+const imagePathMiddleware = require("./middleware/imagePath");
 
 app.use(express.json());
 // Middleware built-in di Express che permette di interpretare il corpo delle richieste in formato JSON
@@ -24,6 +25,8 @@ app.use(express.json());
 app.use("/movies", moviesRouter);
 // Dice all’app di usare il router 'moviesRouter' per tutte le richieste che iniziano con /movies
 // Esempio: /movies, /movies/1, /movies/delete ecc. saranno gestite da questo router
+
+app.use(imagePathMiddleware);
 
 app.use(express.static("public"));
 // Serve file statici dalla cartella "public"
