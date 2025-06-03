@@ -16,22 +16,24 @@ const moviesRouter = require('./routers/movies');
 const { notFound, errorHandler } = require('./middleware/middlewareerror');
 // Importa il router dedicato alle rotte /movies, definito in un file separato
 
-const imagePathMiddleware = require("./middleware/imagePath");
+const imagePath = require("./middleware/imagePath");
 
 app.use(express.json());
 // Middleware built-in di Express che permette di interpretare il corpo delle richieste in formato JSON
 // Utile per ricevere dati da client tramite POST, PUT ecc.
 
-app.use("/movies", moviesRouter);
-// Dice all’app di usare il router 'moviesRouter' per tutte le richieste che iniziano con /movies
-// Esempio: /movies, /movies/1, /movies/delete ecc. saranno gestite da questo router
-
-app.use(imagePathMiddleware);
-
 app.use(express.static("public"));
 // Serve file statici dalla cartella "public"
 // Ad esempio se c’è public/index.html sarà raggiungibile da localhost:3000/index.html
 // Utile per servire risorse come immagini, CSS, JS client-side
+
+
+app.use(imagePath);
+app.use("/movies", moviesRouter);
+// Dice all’app di usare il router 'moviesRouter' per tutte le richieste che iniziano con /movies
+// Esempio: /movies, /movies/1, /movies/delete ecc. saranno gestite da questo router
+
+
 
 app.get("/", (req, res) => {
     res.send("benvenuti nel mio catalogo")
